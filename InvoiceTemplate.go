@@ -1,107 +1,77 @@
 package main
 
 import (
-	// "strings"
+	"fmt"
+
 	"github.com/Akanibekuly/gofpdf/example"
-	// "github.com/Akanibekuly/gofpdf/utils"
 	"github.com/jung-kurt/gofpdf"
 )
 
+// "github.com/Akanibekuly/gofpdf/"
+
 // func main() {
-// 	err := GeneratePdf("InvoiceTemplate.pdf")
-// 	if err != nil {
-// 		panic(err)
-// 	}
+// 	ExampleFpdf_Rect()
 // }
 
-// GeneratePdf generates our pdf by adding text and images to the page
-// then saving it to a file (name specified in params).
-func GeneratePdf(filename string) error {
-	const offset = 75.0
-	var companyName string
-	companyName = "Название компании"
+func ExampleFpdf_Rect() {
+
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddFont("Helvetica", "", "./assets/helvetica_1251.json")
 	pdf.AddPage()
 	pdf.SetFont("Helvetica", "", 8)
 	tr := pdf.UnicodeTranslatorFromDescriptor("./assets/cp1251")
 
-	// add company name
-	// CellFormat(width, height, text, border, position after, align, fill, link, linkStr)
-	pdf.CellFormat(350, 5, tr(companyName), "0", 0, "CM", false, 0, "")
-
-	// add logo image
-	// ImageOptions(src, x, y, width, height, flow, options, link, linkStr)
-	pdf.ImageOptions(
-		"avatar.jpg",
-		175, 15,
-		20, 12,
-		false,
-		gofpdf.ImageOptions{ImageType: "JPG", ReadDpi: true},
-		0,
-		"",
-	)
-	//function that draws lines
-	var draw = func(x0, y0, x1, y1 float64) {
-		// transform begin & end needed to isolate caps and joins
-		// pdf.SetLineCapStyle(cap)
-		// pdf.SetLineJoinStyle(join)
-		// Draw thick line
-		pdf.SetDrawColor(0x33, 0x33, 0x33)
-		pdf.SetLineWidth(0.4)
-		pdf.MoveTo(x0, y0)
-		pdf.LineTo(x1, y1)
-		pdf.DrawPath("D")
+	marginCell := 2. // margin of top/bottom of cell
+	pagew, pageh := pdf.GetPageSize()
+	mleft, mright, _, mbottom := pdf.GetMargins()
+	fmt.Println(pagew, pageh, mleft, mright)
+	header := []string{
+		"№ п/п",
+		"Наименование товаров (работ, услуг)",
+		"Ед. изм.",
+		"Кол-во (объем)",
+		"Цена (KZT)",
+		"Стоимость товаров (работ, услуг) без НДС",
+		"НДС",
+		"Всего стоимость реализации",
+		"Акциз",
 	}
-	// we draw main line after header
-	draw(10, 30, 200, 30)
-	fontSize := 16.0
-	// write title
-	pdf.SetFontSize(fontSize)
-	ht := pdf.PointConvert(fontSize)
-	write := func(str, align string) {
-		pdf.CellFormat(190, ht, tr(str), "", 1, align, false, 0, "")
-	}
-	pdf.Ln(ht)
-	write("Счет-фактура № 1 от 7 февраля 2020 г.", "C")
-	pdf.Ln(ht)
-	// end title
+	cols := []float64{8.0, 25.0, 15.0, 20.0, 20.0, 30.0, 30.0, 20.0, 30.0}
+	rows := [][]string{}
 
-	//  start invoisce table
-	fontSize = 8
-	pdf.SetFontSize(fontSize)
-	ht = pdf.PointConvert(fontSize)
-	arr := []string{
-		"Дата совершения оборота:",
-		"Поставщик: (полностью прописью)",
-		"ИИН и адрес места нахождения поставщика: ИИН …, Республика Казахстан",
-		"ИИК поставщика: KZ... в АО '...', БИК ….",
-		"Договор (контракт) на поставку товаров (работ, услуг): Без договора",
-		"Условия оплаты по договору (контракту): безналичный расчет",
-		"Пункт назначения поставляемых товаров (работ, услуг): ",
-		"Поставка товаров (работ,услуг) осуществлена по доверенности: Без доверенности",
-		"Способ отправления: 99 (Прочие)",
-		"Товарно-транспортная накладная: ",
-		"Грузоотправитель:   ИИН …",
-		"Грузополучатель: БИН: …",
-		"Получатель: (полностью прописью)",
-		"БИН и адрес места нахождения получателя: БИН: 1…, Республика Казахстан, г. Нур-Султан, ",
-		"ИИК получателя: KZ..., в банке АО '...', БИК ….",
-	}
+	rows = append(rows, header)
 
-	//draw Invoice table
-	xPos := 50.0
-	for i, v := range arr {
-		if i != 0 {
-			pdf.Ln(ht * 0.3)
+	for _, row := range rows {
+		curx, y := pdf.GetXY()
+		x := curx
+
+		height := 0.
+		_, lineHt := pdf.GetFontSize()
+
+		for i, txt := range row {
+			lines := pdf.SplitLines([]byte(txt), cols[i])
+			h := float64(len(lines))*lineHt + marginCell*float64(len(lines))
+			if h > height {
+				height = h
+			}
 		}
-		write(tr(v), "L")
-		draw(10.0, xPos, 190.0, xPos)
-		xPos += 4
+		// add a new page if the height of the row doesn't fit on the page
+		if pdf.GetY()+height > pageh-mbottom {
+			pdf.AddPage()
+			y = pdf.GetY()
+		}
+		for i, txt := range row {
+			width := cols[i]
+			pdf.Rect(x, y, width, height, "")
+			pdf.MultiCell(width, lineHt+marginCell, tr(txt), "", "", false)
+			x += width
+			pdf.SetXY(x, y)
+		}
+		pdf.SetXY(curx, y+height)
 	}
-
-	err := pdf.OutputFileAndClose(filename)
-	example.Summary(err, filename)
-	return err
-
+	fileStr := "Fpdf_WrappedTableCells.pdf"
+	err := pdf.OutputFileAndClose(fileStr)
+	example.Summary(err, fileStr)
+	// Output:
+	// Successfully generated pdf/Fpdf_WrappedTableCells.pdf
 }

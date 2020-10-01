@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Akanibekuly/gofpdf/example"
 	"github.com/jung-kurt/gofpdf"
 )
@@ -40,10 +42,6 @@ func GeneratePdf(filename string) error {
 
 	//function that draws lines
 	var draw = func(x0, y0, x1, y1 float64) {
-		// transform begin & end needed to isolate caps and joins
-		// pdf.SetLineCapStyle(cap)
-		// pdf.SetLineJoinStyle(join)
-		// Draw thick line
 		pdf.SetDrawColor(0x33, 0x33, 0x33)
 		pdf.SetLineWidth(0.4)
 		pdf.MoveTo(x0, y0)
@@ -94,7 +92,90 @@ func GeneratePdf(filename string) error {
 		xPos += 4.5
 	}
 
+	pdf.Ln(ht * 2)
+
+	// loadData := func(fileStr string) {
+	// 	fl, err := os.Open(fileStr)
+	// 	if err == nil {
+	// 		scanner := bufio.NewScanner(fl)
+	// 		var c countryType
+	// 		for scanner.Scan() {
+	// 			// Austria;Vienna;83859;8075
+	// 			lineStr := scanner.Text()
+	// 			list := strings.Split(lineStr, ";")
+	// 			if len(list) == 4 {
+	// 				c.nameStr = list[0]
+	// 				c.capitalStr = list[1]
+	// 				c.areaStr = list[2]
+	// 				c.popStr = list[3]
+	// 				countryList = append(countryList, c)
+	// 			} else {
+	// 				err = fmt.Errorf("error tokenizing %s", lineStr)
+	// 			}
+	// 		}
+	// 		fl.Close()
+	// 		if len(countryList) == 0 {
+	// 			err = fmt.Errorf("error loading data from %s", fileStr)
+	// 		}
+	// 	}
+	// 	if err != nil {
+	// 		pdf.SetError(err)
+	// 	}
+	// }
+
+	//рисуем конечную таблицу
+	marginCell := 1. // margin of top/bottom of cell
+	pagew, pageh := pdf.GetPageSize()
+	mleft, mright, _, mbottom := pdf.GetMargins()
+	fmt.Println(pagew, pageh, mleft, mright)
+	header := []string{
+		"№ п/п",
+		"Наименование товаров (работ, услуг)",
+		"Ед. изм.",
+		"Кол-во (объем)",
+		"Цена (KZT)",
+		"Стоимость товаров (работ, услуг) без НДС",
+		"НДС",
+		"Всего стоимость реализации",
+		"Акциз",
+	}
+	// заготовки таблицы
+	cols := []float64{8.0, 25.0, 15.0, 20.0, 15.0, 30.0, 20.0, 20.0, 20.0}
+	rows := [][]string{}
+	rows = append(rows, header)
+	for _, row := range rows {
+		curx, y := pdf.GetXY()
+		x := curx
+
+		height := 14.0
+		_, lineHt := pdf.GetFontSize()
+
+		// add a new page if the height of the row doesn't fit on the page
+		if pdf.GetY()+height > pageh-mbottom {
+			pdf.AddPage()
+			y = pdf.GetY()
+		}
+		fmt.Println("height", height)
+		for i, txt := range row {
+			width := cols[i]
+			pdf.Rect(x, y, width, height, "")
+			fmt.Println(txt)
+			pdf.MultiCell(width, lineHt+marginCell, tr(txt), "", "C", false)
+			x += width
+			pdf.SetXY(x, y)
+		}
+		pdf.SetXY(curx, y+height)
+	}
 	err := pdf.OutputFileAndClose(filename)
 	example.Summary(err, filename)
 	return err
+}
+
+func strDelimit(str string, sepstr string, sepcount int) string {
+	pos := len(str) - sepcount
+	for pos > 0 {
+		str = str[:pos] + sepstr + str[pos:]
+		pos = pos - sepcount
+	}
+	return str
 }
