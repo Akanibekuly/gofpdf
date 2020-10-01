@@ -5,6 +5,7 @@ import (
 
 	"github.com/Akanibekuly/gofpdf/example"
 	"github.com/Akanibekuly/gofpdf/utils"
+	"github.com/Akanibekuly/gofpdf/structs"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -116,7 +117,10 @@ func drawTable() {
 		cellGap  = 2.0
 	)
 	// var colStrList [colCount]string
-
+	var (
+		cellList []structs.cellType
+		cell     structs.cellType
+	)
 	pdf := gofpdf.New("P", "mm", "A4", "") // 210 x 297
 	header := [colCount]string{"Column A", "Column B", "Column C"}
 	alignList := [colCount]string{"L", "C", "R"}
@@ -146,10 +150,10 @@ func drawTable() {
 			if count > len(strList) {
 				count = 1
 			}
-			utils.cell.str = strings.Join(strList[0:count], " ")
-			utils.cell.list = pdf.SplitLines([]byte(utils.cell.str), colWd-cellGap-cellGap)
-			utils.cell.ht = float64(len(utils.cell.list)) * lineHt
-			if utils.cell.ht > maxHt {
+			cell.str = strings.Join(strList[0:count], " ")
+			cell.list = pdf.SplitLines([]byte(cell.str), colWd-cellGap-cellGap)
+			cell.ht = float64(len(cell.list)) * lineHt
+			if cell.ht > maxHt {
 				maxHt = cell.ht
 			}
 			cellList[colJ] = cell

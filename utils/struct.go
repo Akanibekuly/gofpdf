@@ -1,12 +1,7 @@
-package utils
+package structs
 
-type cellType struct {
+type CellType struct {
 	str  string
 	list [][]byte
 	ht   float64
 }
-
-var (
-	cellList []cellType
-	cell     cellType
-)
