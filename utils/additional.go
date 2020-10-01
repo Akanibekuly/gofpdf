@@ -12,3 +12,12 @@ func LoremList() []string {
 			"officia deserunt mollit anim id est laborum.",
 	}
 }
+
+func StrDelimit(str string, sepstr string, sepcount int) string {
+	pos := len(str) - sepcount
+	for pos > 0 {
+		str = str[:pos] + sepstr + str[pos:]
+		pos = pos - sepcount
+	}
+	return str
+}
