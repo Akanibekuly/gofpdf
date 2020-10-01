@@ -5,7 +5,6 @@ import (
 
 	"github.com/Akanibekuly/gofpdf/example"
 	"github.com/Akanibekuly/gofpdf/utils"
-	"github.com/Akanibekuly/gofpdf/structs"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -117,9 +116,14 @@ func drawTable() {
 		cellGap  = 2.0
 	)
 	// var colStrList [colCount]string
+	type cellType struct {
+		str  string
+		list [][]byte
+		ht   float64
+	}
 	var (
-		cellList []structs.cellType
-		cell     structs.cellType
+		cellList [colCount]cellType
+		cell     cellType
 	)
 	pdf := gofpdf.New("P", "mm", "A4", "") // 210 x 297
 	header := [colCount]string{"Column A", "Column B", "Column C"}
