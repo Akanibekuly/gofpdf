@@ -1,21 +1,17 @@
 package main
 
 import (
-	// "strings"
 	"github.com/Akanibekuly/gofpdf/example"
-	// "github.com/Akanibekuly/gofpdf/utils"
 	"github.com/jung-kurt/gofpdf"
 )
 
-// func main() {
-// 	err := GeneratePdf("InvoiceTemplate.pdf")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
+func main() {
+	err := GeneratePdf("Template.pdf")
+	if err != nil {
+		panic(err)
+	}
+}
 
-// GeneratePdf generates our pdf by adding text and images to the page
-// then saving it to a file (name specified in params).
 func GeneratePdf(filename string) error {
 	const offset = 75.0
 	var companyName string
@@ -41,6 +37,7 @@ func GeneratePdf(filename string) error {
 		0,
 		"",
 	)
+
 	//function that draws lines
 	var draw = func(x0, y0, x1, y1 float64) {
 		// transform begin & end needed to isolate caps and joins
@@ -55,22 +52,21 @@ func GeneratePdf(filename string) error {
 	}
 	// we draw main line after header
 	draw(10, 30, 200, 30)
-	fontSize := 16.0
-	// write title
-	pdf.SetFontSize(fontSize)
-	ht := pdf.PointConvert(fontSize)
-	write := func(str, align string) {
-		pdf.CellFormat(190, ht, tr(str), "", 1, align, false, 0, "")
-	}
-	pdf.Ln(ht)
-	write("Счет-фактура № 1 от 7 февраля 2020 г.", "C")
-	pdf.Ln(ht)
-	// end title
 
-	//  start invoisce table
+	// write title
+	fontSize := 16.0
+	ht := pdf.PointConvert(fontSize)
+	pdf.SetFontSize(fontSize)
+	pdf.Ln(ht)
+	titleStr := "Счет-фактура № 1 от 7 февраля 2020 г."
+	wd := pdf.GetStringWidth(titleStr) + 6
+	pdf.SetX((210 - wd) / 2)
+	pdf.CellFormat(wd, ht, tr(titleStr), "", 0, "C", false, 0, "")
+	pdf.Ln(ht)
+
+	//draw table information
 	fontSize = 8
 	pdf.SetFontSize(fontSize)
-	ht = pdf.PointConvert(fontSize)
 	arr := []string{
 		"Дата совершения оборота:",
 		"Поставщик: (полностью прописью)",
@@ -90,18 +86,15 @@ func GeneratePdf(filename string) error {
 	}
 
 	//draw Invoice table
-	xPos := 50.0
-	for i, v := range arr {
-		if i != 0 {
-			pdf.Ln(ht * 0.3)
-		}
-		write(tr(v), "L")
+	xPos := 46.0
+	for _, v := range arr {
+		pdf.Ln(ht * 0.05)
+		pdf.CellFormat(190, ht, tr(v), "", 0, "L", false, 0, "")
 		draw(10.0, xPos, 190.0, xPos)
-		xPos += 4
+		xPos += 4.5
 	}
 
 	err := pdf.OutputFileAndClose(filename)
 	example.Summary(err, filename)
 	return err
-
 }
