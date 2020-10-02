@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Akanibekuly/gofpdf/example"
 	"github.com/jung-kurt/gofpdf"
@@ -63,7 +64,7 @@ func GeneratePdf(filename string) error {
 	pdf.Ln(ht)
 
 	//draw table information
-	fontSize = 8
+	fontSize = 9
 	pdf.SetFontSize(fontSize)
 	arr := []string{
 		"Дата совершения оборота:",
@@ -128,6 +129,45 @@ func GeneratePdf(filename string) error {
 	pagew, pageh := pdf.GetPageSize()
 	mleft, mright, _, mbottom := pdf.GetMargins()
 	fmt.Println(pagew, pageh, mleft, mright)
+
+	curx, y := pdf.GetXY()
+	x := curx
+	var drawTables = func(cols []float64, rows [][]string, height float64) {
+		for _, row := range rows {
+			y = pdf.GetY()
+			x = curx
+			_, lineHt := pdf.GetFontSize()
+			fmt.Println(lineHt)
+			// add a new page if the height of the row doesn't fit on the page
+			if pdf.GetY()+height > pageh-mbottom {
+				pdf.AddPage()
+				y = pdf.GetY()
+			}
+
+			for i, txt := range row {
+				width := cols[i]
+				pdf.Rect(x, y, width, height, "")
+				pdf.MultiCell(width, lineHt+marginCell, tr(txt), "", "CM", false)
+				if txt == "НДС" || txt == "Акциз" {
+					draw(x, y+height/2, x+width, y+height/2)
+					draw(x+width/2, y+height/2, x+width/2, y+height)
+					pdf.SetXY(x, y+height/2)
+					pdf.MultiCell(width/2, lineHt+marginCell, tr("Ставка"), "", "CM", false)
+					pdf.SetXY(x, y+height)
+					pdf.SetXY(x+width/2, y+height/2)
+					pdf.MultiCell(width/2, lineHt+marginCell, tr("Сумма"), "", "CM", false)
+					pdf.SetXY(x+width/2, y+height)
+				}
+				x += width
+				pdf.SetXY(x, y)
+			}
+			y += height
+			pdf.SetXY(x, y)
+		}
+
+	}
+
+	// заготовки таблицы
 	header := []string{
 		"№ п/п",
 		"Наименование товаров (работ, услуг)",
@@ -139,33 +179,33 @@ func GeneratePdf(filename string) error {
 		"Всего стоимость реализации",
 		"Акциз",
 	}
-	// заготовки таблицы
-	cols := []float64{8.0, 25.0, 15.0, 20.0, 15.0, 30.0, 20.0, 20.0, 20.0}
+	cols := []float64{8.0, 25.0, 15.0, 20.0, 15.0, 30.0, 25.0, 20.0, 25.0}
 	rows := [][]string{}
 	rows = append(rows, header)
-	for _, row := range rows {
-		curx, y := pdf.GetXY()
-		x := curx
+	drawTables(cols, rows, 14)
 
-		height := 14.0
-		_, lineHt := pdf.GetFontSize()
-
-		// add a new page if the height of the row doesn't fit on the page
-		if pdf.GetY()+height > pageh-mbottom {
-			pdf.AddPage()
-			y = pdf.GetY()
-		}
-		fmt.Println("height", height)
-		for i, txt := range row {
-			width := cols[i]
-			pdf.Rect(x, y, width, height, "")
-			fmt.Println(txt)
-			pdf.MultiCell(width, lineHt+marginCell, tr(txt), "", "C", false)
-			x += width
-			pdf.SetXY(x, y)
-		}
-		pdf.SetXY(curx, y+height)
+	var temp = []string{}
+	for i := 0; i < 11; i++ {
+		temp = append(temp, strconv.Itoa(i+1))
 	}
+	pdf.SetXY(curx, y)
+	rows = [][]string{}
+	cols = []float64{8.0, 25.0, 15.0, 20.0, 15.0, 30.0, 12.5, 12.5, 20.0, 12.5, 12.5}
+	rows = append(rows, temp)
+	drawTables(cols, rows, 5)
+
+	height := 14.0
+	y = pdf.GetY()
+	pdf.SetFontSize(13)
+	pdf.SetXY(curx, y+height*2)
+	pdf.Cell(50, 10, tr("Руководитель:"))
+	draw(curx, y+height*2+14, curx+70, y+height*2+14)
+	pdf.SetXY(curx+95, y+height*2)
+	pdf.Cell(50, 10, tr("ВЫДАЛ (ответственное лицо поставщика)"))
+	draw(curx+95, y+height*2+14, curx+185, y+height*2+14)
+
+	y += 14
+
 	err := pdf.OutputFileAndClose(filename)
 	example.Summary(err, filename)
 	return err
