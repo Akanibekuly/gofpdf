@@ -137,7 +137,6 @@ func GeneratePdf(filename string) error {
 			y = pdf.GetY()
 			x = curx
 			_, lineHt := pdf.GetFontSize()
-			fmt.Println(lineHt)
 			// add a new page if the height of the row doesn't fit on the page
 			if pdf.GetY()+height > pageh-mbottom {
 				pdf.AddPage()
@@ -196,16 +195,35 @@ func GeneratePdf(filename string) error {
 
 	height := 14.0
 	y = pdf.GetY()
-	pdf.SetFontSize(13)
+	pdf.SetFontSize(12)
 	pdf.SetXY(curx, y+height*2)
 	pdf.Cell(50, 10, tr("Руководитель:"))
-	draw(curx, y+height*2+14, curx+70, y+height*2+14)
-	pdf.SetXY(curx+95, y+height*2)
+	draw(curx, y+height*2+14, curx+76, y+height*2+14)
+	pdf.SetXY(curx+100, y+height*2)
 	pdf.Cell(50, 10, tr("ВЫДАЛ (ответственное лицо поставщика)"))
-	draw(curx+95, y+height*2+14, curx+185, y+height*2+14)
+	draw(curx+100, y+height*2+14, curx+185, y+height*2+14)
 
-	y += 14
+	pdf.SetFontSize(8)
+	pdf.SetXY(curx, y+height*2+15)
+	pdf.CellFormat(75, 4, tr("(Ф.И.О подпись)"), "", 1, "C", false, 0, "")
+	pdf.SetXY(curx+100, y+height*2+15)
+	pdf.CellFormat(90, 4, tr("(должность)"), "", 1, "C", false, 0, "")
 
+	pdf.SetFontSize(13)
+	pdf.SetXY(curx+83, y+height*2+20)
+	pdf.CellFormat(10, 8, tr("МП"), "1", 1, "C", false, 0, "")
+
+	x, y = pdf.GetXY()
+	fmt.Println(x, y, curx)
+	pdf.SetFontSize(12)
+	pdf.Cell(50, 10, tr("Главный бухгалтер: Не предусмотрен"))
+	draw(curx, y+14, curx+76, y+14)
+	draw(curx+100, y+14, curx+185, y+14)
+	pdf.SetFontSize(8)
+	pdf.SetXY(curx, y+15)
+	pdf.CellFormat(75, 4, tr("(Ф.И.О подпись)"), "", 1, "C", false, 0, "")
+	pdf.SetXY(curx+100, y+15)
+	pdf.CellFormat(90, 4, tr("(Ф.И.О подпись)"), "", 1, "C", false, 0, "")
 	err := pdf.OutputFileAndClose(filename)
 	example.Summary(err, filename)
 	return err
