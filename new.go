@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/Akanibekuly/gofpdf/example"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -50,7 +49,7 @@ func GeneratePdf(filename string) error {
 		pdf.DrawPath("D")
 	}
 	// we draw main line after header
-	draw(10, 30, 200, 30)
+	draw(15, 30, 200, 30)
 
 	// write title
 	fontSize := 16.0
@@ -85,11 +84,13 @@ func GeneratePdf(filename string) error {
 	}
 
 	//draw Invoice table
+
 	xPos := 46.0
 	for _, v := range arr {
 		pdf.Ln(ht * 0.05)
+		pdf.SetX(15)
 		pdf.CellFormat(190, ht, tr(v), "", 0, "L", false, 0, "")
-		draw(10.0, xPos, 190.0, xPos)
+		draw(15.0, xPos, 190.0, xPos)
 		xPos += 4.5
 	}
 
@@ -131,7 +132,10 @@ func GeneratePdf(filename string) error {
 	fmt.Println(pagew, pageh, mleft, mright)
 
 	curx, y := pdf.GetXY()
+	curx += 5
+	pdf.SetXY(curx, y)
 	x := curx
+	fmt.Println("x=", curx)
 	var drawTables = func(cols []float64, rows [][]string, height float64) {
 		for _, row := range rows {
 			y = pdf.GetY()
@@ -195,37 +199,37 @@ func GeneratePdf(filename string) error {
 
 	height := 14.0
 	y = pdf.GetY()
-	pdf.SetFontSize(12)
+	pdf.SetFontSize(10)
 	pdf.SetXY(curx, y+height*2)
 	pdf.Cell(50, 10, tr("Руководитель:"))
-	draw(curx, y+height*2+14, curx+76, y+height*2+14)
+	draw(curx, y+height*2+12, curx+76, y+height*2+12)
 	pdf.SetXY(curx+100, y+height*2)
 	pdf.Cell(50, 10, tr("ВЫДАЛ (ответственное лицо поставщика)"))
-	draw(curx+100, y+height*2+14, curx+185, y+height*2+14)
+	draw(curx+100, y+height*2+12, curx+185, y+height*2+12)
 
 	pdf.SetFontSize(8)
-	pdf.SetXY(curx, y+height*2+15)
+	pdf.SetXY(curx, y+height*2+12)
 	pdf.CellFormat(75, 4, tr("(Ф.И.О подпись)"), "", 1, "C", false, 0, "")
-	pdf.SetXY(curx+100, y+height*2+15)
+	pdf.SetXY(curx+100, y+height*2+12)
 	pdf.CellFormat(90, 4, tr("(должность)"), "", 1, "C", false, 0, "")
 
 	pdf.SetFontSize(13)
-	pdf.SetXY(curx+83, y+height*2+20)
+	pdf.SetXY(curx+83, y+height*2+14)
 	pdf.CellFormat(10, 8, tr("МП"), "1", 1, "C", false, 0, "")
 
-	x, y = pdf.GetXY()
-	fmt.Println(x, y, curx)
-	pdf.SetFontSize(12)
+	pdf.SetFontSize(10)
+	y = pdf.GetY()
+	y -= 5
+	pdf.SetXY(curx, y)
 	pdf.Cell(50, 10, tr("Главный бухгалтер: Не предусмотрен"))
-	draw(curx, y+14, curx+76, y+14)
-	draw(curx+100, y+14, curx+185, y+14)
+	draw(curx, y+12, curx+76, y+12)
+	draw(curx+100, y+12, curx+185, y+12)
 	pdf.SetFontSize(8)
-	pdf.SetXY(curx, y+15)
+	pdf.SetXY(curx, y+12)
 	pdf.CellFormat(75, 4, tr("(Ф.И.О подпись)"), "", 1, "C", false, 0, "")
-	pdf.SetXY(curx+100, y+15)
+	pdf.SetXY(curx+100, y+12)
 	pdf.CellFormat(90, 4, tr("(Ф.И.О подпись)"), "", 1, "C", false, 0, "")
 	err := pdf.OutputFileAndClose(filename)
-	example.Summary(err, filename)
 	return err
 }
 
