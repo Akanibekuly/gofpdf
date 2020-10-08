@@ -1,23 +1,29 @@
 package utils
 
-func LoremList() []string {
-	return []string{
-		"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod " +
-			"tempor incididunt ut labore et dolore magna aliqua.",
-		"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut " +
-			"aliquip ex ea commodo consequat.",
-		"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum " +
-			"dolore eu fugiat nulla pariatur.",
-		"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui " +
-			"officia deserunt mollit anim id est laborum.",
+func GetInvoice() Invoice {
+	return Invoice{
+		ID:              "7",
+		IDdate:          "1 февраля",
+		Date:            "17 декабрь 2020 года",
+		Postocshik:      "(полностью прописью)",
+		IINiAddress:     "ИИН ..., Республика Казахстан",
+		IIK:             "KZ... в АО '...', БИК ....",
+		Dogovor:         "Без договора",
+		UslovyaOplati:   "безналичный расчет",
+		PunktNazn:       "",
+		SposobOtpravki:  "99 (Прочие)",
+		Nakladnaya:      "",
+		GruzOtpravitel:  "ИИН ...",
+		GrusPolychatel:  "БИН: ...",
+		Poluchatel:      "(полностью прописью)",
+		BINiAddress:     "БИН: 1..., Республика Казахстан, г. Нур-Султан,",
+		IIKpolychatelya: "KZ..., в банке АО '...', БИК ....",
 	}
 }
 
-func StrDelimit(str string, sepstr string, sepcount int) string {
-	pos := len(str) - sepcount
-	for pos > 0 {
-		str = str[:pos] + sepstr + str[pos:]
-		pos = pos - sepcount
+func GetCompanyInfo() Company {
+	return Company{
+		Name: "Ivozprovider",
+		Logo: "avatar.jpg",
 	}
-	return str
 }

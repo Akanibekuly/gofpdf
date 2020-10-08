@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Akanibekuly/gofpdf/utils"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -15,9 +16,11 @@ func main() {
 }
 
 func GeneratePdf(filename string) error {
+	compInfo := utils.GetCompanyInfo()
+	Invoice := utils.GetInvoice()
 	const offset = 75.0
 	var companyName string
-	companyName = "Название компании"
+	companyName = compInfo.Name
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddFont("Helvetica", "", "./assets/helvetica_1251.json")
 	pdf.AddPage()
@@ -31,7 +34,7 @@ func GeneratePdf(filename string) error {
 	// add logo image
 	// ImageOptions(src, x, y, width, height, flow, options, link, linkStr)
 	pdf.ImageOptions(
-		"avatar.jpg",
+		compInfo.Logo,
 		175, 15,
 		20, 12,
 		false,
@@ -56,7 +59,7 @@ func GeneratePdf(filename string) error {
 	ht := pdf.PointConvert(fontSize)
 	pdf.SetFontSize(fontSize)
 	pdf.Ln(ht)
-	titleStr := "Счет-фактура № 1 от 7 февраля 2020 г."
+	titleStr := "Счет-фактура № " + Invoice.ID + " от " + Invoice.IDdate
 	wd := pdf.GetStringWidth(titleStr) + 6
 	pdf.SetX((210 - wd) / 2)
 	pdf.CellFormat(wd, ht, tr(titleStr), "", 0, "C", false, 0, "")
@@ -65,22 +68,23 @@ func GeneratePdf(filename string) error {
 	//draw table information
 	fontSize = 9
 	pdf.SetFontSize(fontSize)
+
 	arr := []string{
-		"Дата совершения оборота:",
-		"Поставщик: (полностью прописью)",
-		"ИИН и адрес места нахождения поставщика: ИИН …, Республика Казахстан",
-		"ИИК поставщика: KZ... в АО '...', БИК ….",
-		"Договор (контракт) на поставку товаров (работ, услуг): Без договора",
-		"Условия оплаты по договору (контракту): безналичный расчет",
-		"Пункт назначения поставляемых товаров (работ, услуг): ",
-		"Поставка товаров (работ,услуг) осуществлена по доверенности: Без доверенности",
-		"Способ отправления: 99 (Прочие)",
-		"Товарно-транспортная накладная: ",
-		"Грузоотправитель:   ИИН …",
-		"Грузополучатель: БИН: …",
-		"Получатель: (полностью прописью)",
-		"БИН и адрес места нахождения получателя: БИН: 1…, Республика Казахстан, г. Нур-Султан, ",
-		"ИИК получателя: KZ..., в банке АО '...', БИК ….",
+		"Дата совершения оборота: " + Invoice.Date,
+		"Поставщик: " + Invoice.Postocshik,
+		"ИИН и адрес места нахождения поставщика: " + Invoice.IINiAddress,
+		"ИИК поставщика: " + Invoice.IIK,
+		"Договор (контракт) на поставку товаров (работ, услуг): " + Invoice.Dogovor,
+		"Условия оплаты по договору (контракту): " + Invoice.UslovyaOplati,
+		"Пункт назначения поставляемых товаров (работ, услуг): " + Invoice.PunktNazn,
+		"Поставка товаров (работ,услуг): " + Invoice.Postavka,
+		"Способ отправления: " + Invoice.SposobOtpravki,
+		"Товарно-транспортная накладная: " + Invoice.Nakladnaya,
+		"Грузоотправитель: " + Invoice.GruzOtpravitel,
+		"Грузополучатель: " + Invoice.GrusPolychatel,
+		"Получатель: " + Invoice.Poluchatel,
+		"БИН и адрес места нахождения получателя: " + Invoice.BINiAddress,
+		"ИИК получателя: " + Invoice.IIKpolychatelya,
 	}
 
 	//draw Invoice table
